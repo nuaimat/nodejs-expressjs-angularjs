@@ -1,0 +1,8 @@
+{"_id":{"$oid":"57ff1e0e9c6c954a71af8c37"},"name":"My fav place 1","category":"Restaurant","location":[-91.96191251277924,41.005815823091154]}
+{"_id":{"$oid":"57ff1e1a9c6c954a71af8c38"},"name":"My fav place 2","category":"Restaurant","location":[-91.96083426475525,41.005827967751294]}
+{"_id":{"$oid":"57ff1e1c9c6c954a71af8c39"},"name":"My fav place 3","category":"Restaurant","location":[-91.96043193340302,41.00635828239516]}
+{"_id":{"$oid":"57ff279f13112a4bc3ef2c01"},"name":"Jet Stop","category":"School","location":[-91.96137070655823,41.006366378768874]}
+{"_id":{"$oid":"57ff2e67ab6cfb4c52e66fd6"},"name":"nextplace","category":"Restaurant","location":[-91.96074306964874,41.00615992092874]}
+{"_id":{"$oid":"57ff2f7db719c94c5daec8c4"},"name":"My fav place 1","category":"Restaurant","location":[-91.95971310138702,41.00603442663145]}
+{"_id":{"$oid":"57ff33e2cc7cd34ca7d9d079"},"name":"test","category":"Recreational","location":[-91.96145117282867,41.00598989633945]}
+{"_id":{"$oid":"57ff3481cc7cd34ca7d9d07b"},"name":"cafe 1","category":"Cafe","location":[-91.96104347705841,41.006775244347175]}

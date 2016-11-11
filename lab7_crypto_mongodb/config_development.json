@@ -1,0 +1,9 @@
+{
+    "db_hostname": "10.10.13.228",
+    "db_port": "27017",
+    "db_username": "root",
+    "db_password": "root",
+    "db_name": "admin",
+    "crypto_secret": "asaadsaad"
+
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script type="text/javascript" src="/javascripts/location.js" ></script>
+    <script type="text/javascript" src="/javascripts/jquery-3.1.1.min.js" ></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+      <link rel="stylesheet" type="text/css" href="/stylesheets/map-icons.css">
+
+  </head>
+  <body>
+
+    <div id="location"><h1><%= title %></h1>
+      <br />
+      <span id="locspan">Waiting for location:</span> <img src="/images/loader.gif" height="16px" id="loader" />
+      <br />
+      limit:
+      <select id="nearby_limit">
+        <option value="3" selected="selected">3</option>
+        <option value="10">10</option>
+        <option value="-1">All</option>
+      </select>
+      <br />
+      Categories:
+      <select id="nearby_categories">
+        <% for(var i=0; i<poi_types.length; i++) { %>
+        <option><%= poi_types[i] %></option>
+        <% } %>
+        <option value="*" selected="selected">All</option>
+      </select>
+      <br />
+      <span>* double click to add a new POI</span>
+    </div>
+    <div id="map"></div>
+    <div id="dialog-form" title="Create new Point of interest">
+      <form>
+        <fieldset>
+          <label for="name">Name</label>
+          <input type="text" name="name" id="name" value="My fav place" class="text ui-widget-content ui-corner-all">
+          <label for="type">Type</label>
+          <select name="type" id="type" class="select ui-widget-content ui-corner-all">
+            <% for(var i=0; i<poi_types.length; i++) { %>
+            <option><%= poi_types[i].replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();}) %></option>
+            <% } %>
+          </select>
+          <!-- Allow form submission with keyboard without duplicating the dialog button -->
+          <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+        </fieldset>
+      </form>
+    </div>
+    <script type="text/javascript">
+      var myLocation = new MyLocation();
+      var map;
+      var marker;
+      var dialog;
+      var googleMapsInitialized = false;
+      var globalCounter = 1;
+      var nearbyMarkers = [];
+
+
+      function initMap() {
+        console.log("initializing google maps");
+        googleMapsInitialized = true;
+      }
+
+
+      $( function() {
+        var name = $( "#name" );
+        var type = $( "#type" );
+        var nearby_limit = $( "#nearby_limit" );
+        var nearby_categories = $( "#nearby_categories" );
+
+        var allFields = $( [] ).add( name ).add( type );
+
+        var showLoader = setInterval(() => {
+
+
+          if(myLocation.isLocationAvailable() && googleMapsInitialized){
+            clearInterval(showLoader);
+            let lat = myLocation.getLat();
+            let lon = myLocation.getLon();
+
+            $("#location #locspan").html(`Your location is : <span id="yourlocation">(${lat},${lon})</span>`);
+            $("#loader").attr("src","/images/location.png");
+
+            getNearby(lat, lon, nearby_limit.val(), nearby_categories.val());
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: lat, lng: lon},
+                zoom: 18,
+                disableDoubleClickZoom: true,
+                scrollwheel: false
+            });
+
+            marker = new google.maps.Marker({
+              position: {lat: lat, lng: lon},
+              map: map,
+              title: "Your location",
+              animation: google.maps.Animation.DROP
+            });
+
+
+            map.addListener('dblclick', function(e) {
+              placeMarkerAndPanTo(e.latLng, map);
+            });
+
+            map.addListener('center_changed', function(e){
+              setTimeout(() => {getNearby(map.center.lat(), map.center.lng(), nearby_limit.val(), nearby_categories.val())}, 200);
+            });
+
+            function placeMarkerAndPanTo(latLng, map) {
+              dialog.latLngHolder = latLng;
+              dialog.dialog( "open" );
+
+            }
+
+
+
+        }
+      }, 100);
+
+        dialog = $( "#dialog-form" ).dialog({
+          autoOpen: false,
+          height: 170,
+          width: 350,
+          modal: true,
+          buttons: {
+            "Create": addPOI,
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+          },
+          close: function() {
+            form[ 0 ].reset();
+            allFields.removeClass( "ui-state-error" );
+          },
+          latLngHolder: null
+        });
+
+        form = dialog.find( "form" ).on( "submit", function( event ) {
+          event.preventDefault();
+          addPOI();
+        });
+
+        var poleImage = {
+          url: '/images/beachflag.png',
+          // This marker is 20 pixels wide by 32 pixels high.
+          size: new google.maps.Size(20, 32),
+          // The origin for this image is (0, 0).
+          origin: new google.maps.Point(0, 0),
+          // The anchor for this image is the base of the flagpole at (0, 32).
+          anchor: new google.maps.Point(0, 32)
+        };
+
+        function addPOI(){
+          let latLng = dialog.latLngHolder;
+          let newName = name.val();
+          if(newName === "My fav place"){
+
+            newName += " " + globalCounter;
+            ++globalCounter;
+          }
+
+          delete dialog.latLngHolder;
+
+          var marker = createMarker(map, latLng.lat, latLng.lng, type.val(), newName);
+          map.panTo(latLng);
+          nearbyMarkers.push(marker);
+          $.post("/poi/add", {name: newName, category: type.val(), lat: latLng.lat(), lon: latLng.lng()});
+          dialog.dialog( "close" );
+        }
+
+        function displayNearByPOI(poi){
+
+          var marker = createMarker(map, poi.location[1], poi.location[0], poi.category, poi.name);
+          nearbyMarkers.push(marker);
+
+
+        }
+
+        function getNearby(lat, lon, limit, category) {
+            $.get("/poi/around", {lat: lat, lon: lon, limit: limit, category: category}, (nearby_pois) => {
+              nearbyMarkers.forEach((m) => {m.setVisible(false)});
+              nearbyMarkers = [];
+
+              nearby_pois.forEach((poi) => {
+                displayNearByPOI(poi);
+              });
+
+
+
+            });
+        }
+
+        nearby_limit.on("change", function() {
+           getNearby(map.center.lat(), map.center.lng(), nearby_limit.val(), nearby_categories.val());
+        });
+        nearby_categories.on("change", function() {
+          getNearby(map.center.lat(), map.center.lng(), nearby_limit.val(), nearby_categories.val());
+        });
+
+        function createMarker(map, lat, lon, category, title){
+            return new Marker({
+                map: map,
+                position: {lat: lat, lng: lon},
+                icon: {
+                    path: SQUARE_PIN,
+                    fillColor: '#00CCBB',
+                    fillOpacity: 1,
+                    strokeColor: '',
+                    strokeWeight: 0
+                },
+                map_icon_label: '<span class="map-icon map-icon-'+category.toLowerCase()+'"></span>',
+                title: title
+            });
+        }
+      })
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<%= config.gmapskey %>&callback=initMap"
+            async defer></script>
+
+    <script type="text/javascript" src="/javascripts/map-icons.js" async defer></script>
+  </body>
+</html>

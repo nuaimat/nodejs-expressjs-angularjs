@@ -1,0 +1,2 @@
+db.poi.createIndex({"location": "2d"});
+db.poi.createIndex({"name": "text"});

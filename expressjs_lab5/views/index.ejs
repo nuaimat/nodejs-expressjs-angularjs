@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <table>
+      <thead>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Year</th>
+      </thead>
+      <tbody>
+        <% for(var i=0; i<inventors.length; i++) { %>
+            <tr>
+              <td><%= inventors[i].first %></td>
+              <td><%= inventors[i].last %></td>
+              <td><%= inventors[i].year %></td>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>
+  </body>
+</html>

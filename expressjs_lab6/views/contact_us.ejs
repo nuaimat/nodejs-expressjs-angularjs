@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        <%= title %>
+    </title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+
+
+    <form method="POST" enctype="x-www-form-urlencoded">
+
+        <h1>
+            <%= title %>
+        </h1>
+
+        <fieldset>
+            <legend><span class="number">1</span>How can we address you?</legend>
+            <label for="name">Full name:</label>
+            <% if(locals.errorsByKey && locals.errorsByKey.name){ %>
+                <label for="name" class="error"><%= locals.errorsByKey.name.msg %></label>
+            <% } %>
+            <input type="text" id="name" name="name" <% if(locals.name){ %>value="<%= name %>"<% } %>>
+        </fieldset>
+        <fieldset>
+            <legend><span class="number">2</span>You're contacting us about?</legend>
+            <label>Type:</label>
+            <% if(locals.errorsByKey && locals.errorsByKey.type){ %>
+                <label class="error"><%= locals.errorsByKey.type.msg %></label>
+            <% } %>
+            <input type="radio" id="suggestion" value="suggestion" name="type" <% if(locals.type === 'suggestion'){ %> checked="checked" <% } %> ><label for="suggestion" class="light">Suggestion</label><br>
+            <input type="radio" id="complaint" value="complaint" name="type" <% if(locals.type === 'complaint'){ %> checked="checked" <% } %> ><label for="complaint" class="light">Complaint</label>
+        </fieldset>
+        <fieldset>
+            <legend><span class="number">3</span>Can you please tell us more?</legend>
+            <label for="message">Message:</label>
+            <% if(locals.errorsByKey && locals.errorsByKey.message){ %>
+                <label for="message" class="error"><%= locals.errorsByKey.message.msg %></label>
+            <% } %>
+            <textarea id="message" name="message"><% if(locals.message){ %><%= message %><% } %></textarea>
+        </fieldset>
+        <button type="submit">Sign Up</button>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    </form>
+</body>
+
+</html>
